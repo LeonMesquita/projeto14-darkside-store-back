@@ -1,7 +1,7 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import productRouter from './routes/productRouter.js';
-
+import cors from 'cors';
 dotenv.config();
 const app = express();
 
@@ -30,6 +30,7 @@ app.use((req, res, next) => {
     next();
 });
 */
+app.use(cors());
 app.use(express.json());
 
 
