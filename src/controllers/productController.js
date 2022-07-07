@@ -5,7 +5,6 @@ import {db, objectId} from '../db/mongo.js'
 
 export async function createProduct(req, res){
     const productBody = req.body;
-    console.log(productBody)
     if (!productBody) return res.sendStatus(400);
     try{
         await db.collection('products').insertOne(
@@ -15,6 +14,15 @@ export async function createProduct(req, res){
     }catch(error){
         console.log(error)
         return res.status(400).send("Não foi possível criar produto");
+    }
+}
+
+export async function getProducts(req, res){
+    try{
+        const productsList = await db.collection('products').find().toArray();
+        return res.status(200).send(productsList);
+    }catch(error){
+
     }
 }
 
