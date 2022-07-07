@@ -18,9 +18,18 @@ export async function createProduct(req, res){
 }
 
 export async function getProducts(req, res){
+    const productType = req.params.productType;
     try{
-        const productsList = await db.collection('products').find().toArray();
-        return res.status(200).send(productsList);
+        if(productType === 'Tudo' || !productType){
+            const productsList = await db.collection('products').find().toArray();
+            return res.status(200).send(productsList);            
+        }
+        else{
+            const productsList = await db.collection('products').find({type: productType}).toArray();
+            if(productsList.length===0 || !productsList) return res.sendStatus(404);
+            return res.status(200).send(productsList);    
+        }
+
     }catch(error){
 
     }
