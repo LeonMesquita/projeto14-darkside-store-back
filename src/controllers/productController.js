@@ -85,6 +85,18 @@ export async function addItems(req, res){
 
 }
 
+export async function getCart(req, res){
+    // pegar as informações do usuário quando a feature de login estiver completa
+    try{
+        const cartList = await db.collection('cart').find().toArray();
+        if (!cartList) return res.sendStatus(404);
+
+        console.log(cartList);
+        return res.status(200).send(cartList);
+    }catch(error){
+        return res.sendStatus(400)
+    }
+}
 
 /*
     cart:
