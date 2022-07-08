@@ -1,6 +1,6 @@
 import dotenv from 'dotenv';
 dotenv.config();
-import {db, objectId} from '../db/mongo.js'
+import {db, ObjectId} from '../db/mongo.js'
 
 
 export async function createProduct(req, res){
@@ -34,6 +34,79 @@ export async function getProducts(req, res){
 
     }
 }
+
+
+export async function addItems(req, res){
+    const wishBody = req.body;
+   // const totalQuantity = req.body.totalQuantity;
+    if(!wishBody) return res.sendStatus(400);
+    try{
+        const product = await db.collection('products').findOne({_id: new ObjectId(wishBody.productId)});
+        if (!product) return res.sendStatus(404);
+        const price = product.price * wishBody.itemQuantity;
+
+        const cart = await db.collection('cart').findOne({productId: wishBody.productId});
+        console.log(wishBody.productId)
+        console.log(cart);
+        if(wishBody.itemQuantity === 0){
+            await db.collection('cart').deleteOne({productId: wishBody.productId});
+            return res.sendStatus(200);
+        }
+        if (!cart){
+            await db.collection('cart').insertOne({
+               productId: wishBody.productId,
+               itemQuantity: wishBody.itemQuantity,
+               price,
+               title: product.title,
+               image: product.image
+              //  totalQuantity
+            });
+            return res.sendStatus(201);
+        }
+        else{
+            await db.collection('cart').updateOne(
+                {
+                    productId: wishBody.productId
+                },
+                {
+                    $set: {
+                        itemQuantity: wishBody.itemQuantity,
+                        price: price
+                    }
+                }
+            );
+            return res.sendStatus(200);   
+        }
+
+    }catch(error){
+        return res.sendStatus(400);
+
+    }
+
+}
+
+export async function getCart(req, res){
+    // pegar as informações do usuário quando a feature de login estiver completa
+    try{
+        const cartList = await db.collection('cart').find().toArray();
+        if (!cartList) return res.sendStatus(404);
+
+        console.log(cartList);
+        return res.status(200).send(cartList);
+    }catch(error){
+        return res.sendStatus(400)
+    }
+}
+
+/*
+    cart:
+    {
+            productId
+            itemQuantity
+    }
+
+
+*/
 
 /*
             {
