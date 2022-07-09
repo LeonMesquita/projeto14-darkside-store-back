@@ -11,4 +11,4 @@ client.connect().then(() => {
 
 const objectId = ObjectId;
 
-export {db, ObjectId};
+export {db, objectId};

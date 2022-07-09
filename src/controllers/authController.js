@@ -1,20 +1,22 @@
-import db from "../db/mongo";
+import {db} from "../db/mongo.js";
 import bcrypt from "bcrypt";
-import { authCadastroSchema, authLoginSchema } from "../Schema/authSchema";
+import { authCadastroSchema, authLoginSchema } from "../Schema/authSchema.js";
 import { v4 as uuid, validate} from "uuid";
-
+//leo@gmail.com
 export async function loginUser(req, res) {
     try {
         const user = req.body;
         const validate = authLoginSchema.validate(user);
+        console.log(user);
 
         if(validate.error) {
             return res.status(422).send("Email e senha são obrigatórios");
         }
+        console.log('passou')
 
         const checkUser = await db.collection("users").findOne({email: user.email});
 
-        if(!chackUser) {
+        if(!checkUser) {
             return res.status(422).send("Email ou senha inválidos");
         }
 
