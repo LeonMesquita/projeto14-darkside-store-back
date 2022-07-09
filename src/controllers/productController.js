@@ -1,6 +1,6 @@
 import dotenv from 'dotenv';
 dotenv.config();
-import {db, ObjectId} from '../db/mongo.js'
+import {db, objectId} from '../db/mongo.js'
 
 
 export async function createProduct(req, res){
@@ -41,7 +41,7 @@ export async function addItems(req, res){
    // const totalQuantity = req.body.totalQuantity;
     if(!wishBody) return res.sendStatus(400);
     try{
-        const product = await db.collection('products').findOne({_id: new ObjectId(wishBody.productId)});
+        const product = await db.collection('products').findOne({_id: new objectId(wishBody.productId)});
         if (!product) return res.sendStatus(404);
         const price = product.price * wishBody.itemQuantity;
 
