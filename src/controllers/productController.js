@@ -36,44 +36,72 @@ export async function getProducts(req, res){
 }
 
 
-export async function addItems(req, res){
-    const wishBody = req.body;
-   // const totalQuantity = req.body.totalQuantity;
-    if(!wishBody) return res.sendStatus(400);
-    try{
-        const product = await db.collection('products').findOne({_id: new objectId(wishBody.productId)});
-        if (!product) return res.sendStatus(404);
-        const totalPrice = product.price * wishBody.itemQuantity;
 
-        const cart = await db.collection('cart').findOne({productId: wishBody.productId});
-       // console.log(wishBody.productId)
-       // console.log(cart);
-        if(wishBody.itemQuantity === 0){
-            await db.collection('cart').deleteOne({productId: wishBody.productId});
-            return res.sendStatus(200);
-        }
-        if (!cart){
-            await db.collection('cart').insertOne({
+/*
+{
+    userId,
+    userEmail,
+    products: [
+        {
                 productId: wishBody.productId,
                 itemQuantity: wishBody.itemQuantity,
                 price: product.price,
                 totalPrice: totalPrice.toFixed(2), 
                 title: product.title,
                 image: product.image
-               //  totalQuantity
-             });
+        }
+    ]
+}
+*/
+
+export async function addItems(req, res){
+    const { authorization } = req.headers;
+    const token = authorization?.replace("Bearer ", "");
+    const session = await db.collection('sessions').findOne({token});
+        if(!session) return res.sendStatus(401);
+    const wishBody = req.body;
+    if(!wishBody) return res.sendStatus(400);
+    try{
+
+
+        const user = await db.collection('users').findOne({_id: new objectId(session.userId)});
+
+
+
+        const product = await db.collection('products').findOne({_id: new objectId(wishBody.productId)});
+        if (!product) return res.sendStatus(404);
+        const totalPrice = product.price * wishBody.itemQuantity;
+
+        const cart = await db.collection('cart').findOne({userEmail: user.email});
+        const newProduct = {
+            productId: wishBody.productId,
+            itemQuantity: wishBody.itemQuantity,
+            price: Number(product.price),
+            totalPrice: Number(totalPrice.toFixed(2)), 
+            title: product.title,
+            image: product.image
+        }
+        if (!cart){
+            await db.collection('cart').insertOne(
+                {
+                    userId: user._id,
+                    userEmail: user.email,
+                    products: [newProduct]
+                }
+            );
             return res.sendStatus(201);
         }
+
+    
         else{
-            await db.collection('cart').updateOne(
+            const filterProducts = cart.products.filter((item) => item.productId !== wishBody.productId);
+            if(wishBody.itemQuantity > 0) filterProducts.push(newProduct);
+            await db.collection('cart').deleteOne({userEmail: user.email});
+            await db.collection('cart').insertOne(
                 {
-                    productId: wishBody.productId
-                },
-                {
-                    $set: {
-                        itemQuantity: wishBody.itemQuantity,
-                        totalPrice: totalPrice.toFixed(2)
-                    }
+                    userId: user._id,
+                    userEmail: user.email,
+                    products: filterProducts
                 }
             );
             return res.sendStatus(200);   
@@ -87,19 +115,41 @@ export async function addItems(req, res){
 }
 
 export async function getCart(req, res){
-    // pegar as informações do usuário quando a feature de login estiver completa
-    try{
-        const cartList = await db.collection('cart').find().toArray();
-        if (!cartList) return res.sendStatus(404);
+    const { authorization } = req.headers;
+    const token = authorization?.replace("Bearer ", "");
 
-      //  console.log(cartList);
-        return res.status(200).send(cartList);
+
+
+    try{
+        const session = await db.collection('sessions').findOne({token});
+        if(!session) return res.sendStatus(401);
+        const user = await db.collection('users').findOne({_id: new objectId(session.userId)});
+        const userCart = await db.collection('cart').findOne({userEmail: user.email});
+        return res.status(200).send(userCart);
     }catch(error){
         return res.sendStatus(400)
     }
 }
 
 /*
+
+{
+    userId,
+    userEmail,
+    products: [
+        {
+                productId: wishBody.productId,
+                itemQuantity: wishBody.itemQuantity,
+                price: product.price,
+                totalPrice: totalPrice.toFixed(2), 
+                title: product.title,
+                image: product.image
+        }
+    ]
+}
+
+
+
     cart:
     {
             productId
