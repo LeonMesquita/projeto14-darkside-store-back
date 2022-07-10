@@ -7,12 +7,11 @@ export async function loginUser(req, res) {
     try {
         const user = req.body;
         const validate = authLoginSchema.validate(user);
-        console.log(user);
 
         if(validate.error) {
             return res.status(422).send("Email e senha são obrigatórios");
         }
-        console.log('passou')
+        
 
         const checkUser = await db.collection("users").findOne({email: user.email});
 
@@ -26,7 +25,7 @@ export async function loginUser(req, res) {
             const token = uuid();
             await db.collection("sessions").insertOne({token, userId: checkUser._id});
 
-            return res.status(200).send({token, name: checkUser.name});
+            return res.status(200).send({token, name: checkUser.name, email: checkUser.email});
         }
         res.status(201).send("Cadastrou");
     }
