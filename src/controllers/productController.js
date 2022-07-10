@@ -43,24 +43,25 @@ export async function addItems(req, res){
     try{
         const product = await db.collection('products').findOne({_id: new objectId(wishBody.productId)});
         if (!product) return res.sendStatus(404);
-        const price = product.price * wishBody.itemQuantity;
+        const totalPrice = product.price * wishBody.itemQuantity;
 
         const cart = await db.collection('cart').findOne({productId: wishBody.productId});
-        console.log(wishBody.productId)
-        console.log(cart);
+       // console.log(wishBody.productId)
+       // console.log(cart);
         if(wishBody.itemQuantity === 0){
             await db.collection('cart').deleteOne({productId: wishBody.productId});
             return res.sendStatus(200);
         }
         if (!cart){
             await db.collection('cart').insertOne({
-               productId: wishBody.productId,
-               itemQuantity: wishBody.itemQuantity,
-               price,
-               title: product.title,
-               image: product.image
-              //  totalQuantity
-            });
+                productId: wishBody.productId,
+                itemQuantity: wishBody.itemQuantity,
+                price: product.price,
+                totalPrice: totalPrice.toFixed(2), 
+                title: product.title,
+                image: product.image
+               //  totalQuantity
+             });
             return res.sendStatus(201);
         }
         else{
@@ -71,7 +72,7 @@ export async function addItems(req, res){
                 {
                     $set: {
                         itemQuantity: wishBody.itemQuantity,
-                        price: price
+                        totalPrice: totalPrice.toFixed(2)
                     }
                 }
             );
@@ -91,7 +92,7 @@ export async function getCart(req, res){
         const cartList = await db.collection('cart').find().toArray();
         if (!cartList) return res.sendStatus(404);
 
-        console.log(cartList);
+      //  console.log(cartList);
         return res.status(200).send(cartList);
     }catch(error){
         return res.sendStatus(400)
@@ -115,4 +116,18 @@ export async function getCart(req, res){
     "price": "89,90",
     "image": "https://lojapiticas.vteximg.com.br/arquivos/ids/165002-258-258/star-wars-duplace-face-5.png?v=637637756454970000"
 }
+*/
+
+
+
+/*
+            await db.collection('cart').insertOne({
+               productId: wishBody.productId,
+               itemQuantity: wishBody.itemQuantity,
+               price: product.price,
+               totalPrice, 
+               title: product.title,
+               image: product.image
+              //  totalQuantity
+            });
 */
