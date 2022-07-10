@@ -131,6 +131,74 @@ export async function getCart(req, res){
     }
 }
 
+
+export async function favoriteItem(req, res){
+    const action = req.params.action;
+    const { authorization } = req.headers;
+    const token = authorization?.replace("Bearer ", "");
+    const session = await db.collection('sessions').findOne({token});
+    if(!session) return res.sendStatus(401);
+    const user = await db.collection('users').findOne({_id: new objectId(session.userId)});
+    /*
+        {
+            productId,
+            userId,
+            title
+:
+"Camiseta Dupla Face Star Wars Saga"
+type
+:
+"Camisetas"
+price
+:
+89.9
+image
+:
+"https://lojapiticas.vteximg.com.br/arquivos/ids/165002-258-258/star-wa..."
+        }
+    */
+
+    const { productId } = req.body;
+    if(!productId) return res.sendStatus(422);
+    const product = await db.collection('products').findOne({_id: new objectId(productId)});
+    if(!product) return res.sendStatus(404);
+
+    try{
+        if(action === "add"){
+            await db.collection("favorites").insertOne({
+                productId,
+                userId: user._id,
+                title: product.title,
+                type: product.type,
+                price: product.price,
+                image: product.image
+            });
+        }
+        else if(action === "remove"){
+            await db.collection("favorites").deleteOne({productId: productId});
+        }
+        return res.sendStatus(200);
+    }catch(error){
+        return res.status(400).send("Falha ao favoritar item");
+    }
+}
+
+export async function getFavorites(req, res){
+    const { authorization } = req.headers;
+    const token = authorization?.replace("Bearer ", "");
+    const session = await db.collection('sessions').findOne({token});
+    if(!session) return res.sendStatus(401);
+    const user = await db.collection('users').findOne({_id: new objectId(session.userId)});
+
+    try{
+        const favoritesList = await db.collection('favorites').find({userId: user._id}).toArray();
+        return res.status(200).send(favoritesList);
+
+    }catch(error){
+        return res.status(404).send('nada encontrado');
+    }
+}
+
 /*
 
 {
