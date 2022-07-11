@@ -6,6 +6,7 @@ router.post('/products', createProduct);
 router.get('/products/:productType', getProducts);
 router.post('/cart', addItems);
 router.get('/cart', getCart);
+router.delete('/cart', deleteCart);
 router.post('/favorite/:action', favoriteItem);
 router.get('/favorite', getFavorites);
 router.post('/order', payOrder);
