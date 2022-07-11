@@ -37,22 +37,6 @@ export async function getProducts(req, res){
 
 
 
-/*
-{
-    userId,
-    userEmail,
-    products: [
-        {
-                productId: wishBody.productId,
-                itemQuantity: wishBody.itemQuantity,
-                price: product.price,
-                totalPrice: totalPrice.toFixed(2), 
-                title: product.title,
-                image: product.image
-        }
-    ]
-}
-*/
 
 export async function addItems(req, res){
     const { authorization } = req.headers;
@@ -139,24 +123,8 @@ export async function favoriteItem(req, res){
     const session = await db.collection('sessions').findOne({token});
     if(!session) return res.sendStatus(401);
     const user = await db.collection('users').findOne({_id: new objectId(session.userId)});
-    /*
-        {
-            productId,
-            userId,
-            title
-:
-"Camiseta Dupla Face Star Wars Saga"
-type
-:
-"Camisetas"
-price
-:
-89.9
-image
-:
-"https://lojapiticas.vteximg.com.br/arquivos/ids/165002-258-258/star-wa..."
-        }
-    */
+
+
 
     const { productId } = req.body;
     if(!productId) return res.sendStatus(422);
@@ -199,53 +167,48 @@ export async function getFavorites(req, res){
     }
 }
 
-/*
 
-{
-    userId,
-    userEmail,
-    products: [
-        {
-                productId: wishBody.productId,
-                itemQuantity: wishBody.itemQuantity,
-                price: product.price,
-                totalPrice: totalPrice.toFixed(2), 
-                title: product.title,
-                image: product.image
-        }
-    ]
-}
+export async function payOrder(req, res){
+    const { authorization } = req.headers;
+    const token = authorization?.replace("Bearer ", "");
+    const session = await db.collection('sessions').findOne({token});
+    if(!session) return res.sendStatus(401);
+    const user = await db.collection('users').findOne({_id: new objectId(session.userId)});
 
+    const order = {
+        ...req.body,
+        userId: user._id
+    };
+    try{
+        await db.collection('orders').insertOne(
+            order
+            
+        );
+        return res.status(201).send('OK');
+    }catch(error){
+        return res.sendStatus(400);
 
-
-    cart:
-    {
-            productId
-            itemQuantity
     }
-
-
-*/
-
-/*
-            {
-    "title": "Camiseta Dupla Face Star Wars Saga",
-    "type": "camiseta",
-    "price": "89,90",
-    "image": "https://lojapiticas.vteximg.com.br/arquivos/ids/165002-258-258/star-wars-duplace-face-5.png?v=637637756454970000"
 }
-*/
 
 
+export async function getOrders(req, res){
+    const { authorization } = req.headers;
+    const token = authorization?.replace("Bearer ", "");
+    const session = await db.collection('sessions').findOne({token});
+    if(!session) return res.sendStatus(401);
+    const user = await db.collection('users').findOne({_id: new objectId(session.userId)});
 
-/*
-            await db.collection('cart').insertOne({
-               productId: wishBody.productId,
-               itemQuantity: wishBody.itemQuantity,
-               price: product.price,
-               totalPrice, 
-               title: product.title,
-               image: product.image
-              //  totalQuantity
-            });
-*/
+    try{
+        const orders = await db.collection('orders').find({userId: user._id}).toArray();
+        return res.status(200).send(orders);
+        
+    }catch{
+
+    }
+}
+
+
+export async function deleteCart(req, res){
+
+}
