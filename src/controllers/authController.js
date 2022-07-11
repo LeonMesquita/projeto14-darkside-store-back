@@ -2,7 +2,6 @@ import {db} from "../db/mongo.js";
 import bcrypt from "bcrypt";
 import { authCadastroSchema, authLoginSchema } from "../Schema/authSchema.js";
 import { v4 as uuid, validate} from "uuid";
-//leo@gmail.com
 export async function loginUser(req, res) {
     try {
         const user = req.body;
