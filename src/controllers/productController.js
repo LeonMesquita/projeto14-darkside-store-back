@@ -39,19 +39,11 @@ export async function getProducts(req, res){
 
 
 export async function addItems(req, res){
-    const { authorization } = req.headers;
-    const token = authorization?.replace("Bearer ", "");
-    const session = await db.collection('sessions').findOne({token});
-        if(!session) return res.sendStatus(401);
+    const user = res.locals.user;
     const wishBody = req.body;
+    console.log(user);
     if(!wishBody) return res.sendStatus(400);
     try{
-
-
-        const user = await db.collection('users').findOne({_id: new objectId(session.userId)});
-
-
-
         const product = await db.collection('products').findOne({_id: new objectId(wishBody.productId)});
         if (!product) return res.sendStatus(404);
         const totalPrice = product.price * wishBody.itemQuantity;
@@ -99,15 +91,8 @@ export async function addItems(req, res){
 }
 
 export async function getCart(req, res){
-    const { authorization } = req.headers;
-    const token = authorization?.replace("Bearer ", "");
-
-
-
+    const user = res.locals.user;
     try{
-        const session = await db.collection('sessions').findOne({token});
-        if(!session) return res.sendStatus(401);
-        const user = await db.collection('users').findOne({_id: new objectId(session.userId)});
         const userCart = await db.collection('cart').findOne({userEmail: user.email});
         return res.status(200).send(userCart);
     }catch(error){
@@ -116,16 +101,10 @@ export async function getCart(req, res){
 }
 
 
+
 export async function favoriteItem(req, res){
     const action = req.params.action;
-    const { authorization } = req.headers;
-    const token = authorization?.replace("Bearer ", "");
-    const session = await db.collection('sessions').findOne({token});
-    if(!session) return res.sendStatus(401);
-    const user = await db.collection('users').findOne({_id: new objectId(session.userId)});
-
-
-
+    const user = res.locals.user;
     const { productId } = req.body;
     if(!productId) return res.sendStatus(422);
     const product = await db.collection('products').findOne({_id: new objectId(productId)});
@@ -152,12 +131,7 @@ export async function favoriteItem(req, res){
 }
 
 export async function getFavorites(req, res){
-    const { authorization } = req.headers;
-    const token = authorization?.replace("Bearer ", "");
-    const session = await db.collection('sessions').findOne({token});
-    if(!session) return res.sendStatus(401);
-    const user = await db.collection('users').findOne({_id: new objectId(session.userId)});
-
+    const user = res.locals.user;
     try{
         const favoritesList = await db.collection('favorites').find({userId: user._id}).toArray();
         return res.status(200).send(favoritesList);
@@ -169,12 +143,7 @@ export async function getFavorites(req, res){
 
 
 export async function payOrder(req, res){
-    const { authorization } = req.headers;
-    const token = authorization?.replace("Bearer ", "");
-    const session = await db.collection('sessions').findOne({token});
-    if(!session) return res.sendStatus(401);
-    const user = await db.collection('users').findOne({_id: new objectId(session.userId)});
-
+    const user = res.locals.user;
     const order = {
         ...req.body,
         userId: user._id
@@ -182,7 +151,6 @@ export async function payOrder(req, res){
     try{
         await db.collection('orders').insertOne(
             order
-            
         );
         return res.status(201).send('OK');
     }catch(error){
@@ -193,12 +161,7 @@ export async function payOrder(req, res){
 
 
 export async function getOrders(req, res){
-    const { authorization } = req.headers;
-    const token = authorization?.replace("Bearer ", "");
-    const session = await db.collection('sessions').findOne({token});
-    if(!session) return res.sendStatus(401);
-    const user = await db.collection('users').findOne({_id: new objectId(session.userId)});
-
+    const user = res.locals.user;
     try{
         const orders = await db.collection('orders').find({userId: user._id}).toArray();
         return res.status(200).send(orders);
@@ -210,12 +173,7 @@ export async function getOrders(req, res){
 
 
 export async function deleteCart(req, res){
-    const { authorization } = req.headers;
-    const token = authorization?.replace("Bearer ", "");
-    const session = await db.collection('sessions').findOne({token});
-    if(!session) return res.sendStatus(401);
-    const user = await db.collection('users').findOne({_id: new objectId(session.userId)});
-
+    const user = res.locals.user;
     try{
         await db.collection('cart').deleteOne({userEmail: user.email});
         return res.status(200).send("ok");
