@@ -210,5 +210,17 @@ export async function getOrders(req, res){
 
 
 export async function deleteCart(req, res){
+    const { authorization } = req.headers;
+    const token = authorization?.replace("Bearer ", "");
+    const session = await db.collection('sessions').findOne({token});
+    if(!session) return res.sendStatus(401);
+    const user = await db.collection('users').findOne({_id: new objectId(session.userId)});
 
+    try{
+        await db.collection('cart').deleteOne({userEmail: user.email});
+        return res.status(200).send("ok");
+        
+    }catch{
+        return res.sendStatus(400);
+    }
 }
